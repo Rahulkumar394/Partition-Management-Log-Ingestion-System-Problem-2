@@ -1,0 +1,36 @@
+# FILE: log-ingestion-system/prometheus.yml (FINAL VERSION)
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # 🔹 Kafka Exporter (for consumer lag, topic metrics, etc.)
+  - job_name: 'kafka-exporter'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['kafka-exporter:9308']
+
+  # 🔹 Spring Boot Kafka Producer Metrics
+  - job_name: 'log-producer'
+    scrape_interval: 10s
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['log-producer:8080']
+
+  # 🔹 Spring Boot Kafka Consumers (3 instances)
+  - job_name: 'log-consumers'
+    scrape_interval: 10s
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets:
+          - 'log-consumer-1:8080'
+          - 'log-consumer-2:8080'
+          - 'log-consumer-3:8080'
+
+  # 🔹 Kafka JMX Exporter (for broker metrics like ISR, topic size)
+  # This now points to the dedicated jmx-exporter container
+  - job_name: 'kafka-jmx'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['jmx-exporter:5556']
